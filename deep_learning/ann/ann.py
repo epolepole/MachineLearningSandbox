@@ -39,15 +39,27 @@ from tools.models import create_lr_model
 classifier_model = create_lr_model(preprocess_pipeline)
 
 # %% Create the ann model pipeline
-from tools.models import create_ann_model
+from tensorflow.python.keras.layers import Dense
+from tensorflow.python.keras.models import Sequential
+from sklearn.pipeline import make_pipeline
 
-classifier_model = create_ann_model(preprocess_pipeline)
+ann_classifier = Sequential()
+ann_classifier.add(Dense(units=6, kernel_initializer='random_uniform', activation='relu', input_dim='13'))
+ann_classifier.add(Dense(units=6, kernel_initializer='random_uniform', activation='relu'))
+ann_classifier.add(Dense(units=1, kernel_initializer='random_uniform', activation='sigmoid'))
+
+ann_classifier.compile(optimizer='Nadam', loss='binary_crossentropy', metrics=['accuracy', 'binary_accuracy'])
+
+ann_classifier_model = make_pipeline(
+    preprocess_pipeline,
+    ann_classifier
+)
 
 # %% Fit the model
-classifier_model.fit(X_train, y_train)
+ann_classifier_model.fit(X_train, y_train)
 
 # %% Show model accuracy
 from tools.errors import plot_roc_curve
 
-y_score = classifier_model.decision_function(X_test)
+y_score = ann_classifier_model.decision_function(X_test)
 plot_roc_curve(y_score, y_test)
